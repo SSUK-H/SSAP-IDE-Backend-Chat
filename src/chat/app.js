@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3002/ide",
+    origin: "http://localhost:3004",
   },
 });
 
@@ -25,7 +25,7 @@ app.use("/chatHistory", chatRouter);
 chatSocket(io);
 
 // 서버 연결
-const PORT = process.env.PORT || 5005;
+const PORT = process.env.PORT || 5009;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

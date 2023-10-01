@@ -10,7 +10,7 @@ const chatSocket = (io) => {
       if (!socket) console.error("Socket is undefined!");
       if (typeof userName === "undefined") console.error("userName is undefined!");
 
-      socket.username = userName;
+      socket.userName = userName;
       console.log(`Username set to ${userName}`);
     });
 
@@ -25,7 +25,7 @@ const chatSocket = (io) => {
       console.log("Received message:", message);
       chatHistory.push(message);
 
-      io.to(roomId).emit("receiveMessage", message);
+      io.to(roomId).emit("receiveMessage", { ...message, socketId: socket.id });
       console.log("Received chatHistory:", chatHistory);
     });
 
