@@ -37,7 +37,8 @@ const chatSocket = (io) => {
         const result = await saveMessageToDB(roomId, socketId, email, name, message);
 
         if (result.success) {
-          io.to(roomId).emit("receiveMessage", { ...message, socketId });
+          // 다른 클라이언트에게 메세지 전송
+          io.to(roomId).emit("receiveMessage", { email, name, message, socketId });
           console.log("메세지가 저장되고 다른 클라이언트에게 전송되었습니다");
         }
       } catch (error) {
