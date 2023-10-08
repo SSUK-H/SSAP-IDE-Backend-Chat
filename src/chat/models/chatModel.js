@@ -1,14 +1,11 @@
 const mysql = require("mysql2/promise");
+require("dotenv").config(); // 민감정보 보호
 
-// TODO: DB 저장
-// TODO: 새로고침시..? DB 불러오기 접속한 시점부터 현재 시점까지..?
-// TODO: 자동으로 데이터 들어갈때 DB 시간 설정 가능??
-// TODO: 룸 종료시 DB 삭제
 const pool = mysql.createPool({
-  host: "ssap-ide-db.cp6hsnofjfzx.ap-northeast-2.rds.amazonaws.com",
-  user: "master",
-  password: "ssap_rainbow0929",
-  database: "ssap-ide-db",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 async function checkConnection() {
