@@ -1,4 +1,4 @@
-const { pool } = require("../../../src/chat/models/chatModel");
+const { pool } = require("../models/chatModel");
 
 const saveMessageToDB = async (roomId, socketId, email, name, message) => {
   try {
