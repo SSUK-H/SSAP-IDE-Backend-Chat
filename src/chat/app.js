@@ -4,25 +4,32 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const chatRouter = require("./routes/chat");
 const chatSocket = require("./sockets/chatSocket");
+const { checkConnection } = require("./models/chatModel");
 
 // 서버 및 소켓 초기화
 const app = express();
+app.use(cors()); // CORS 설정
+
+
 const server = http.createServer(app);
+
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3004",
+    origin: "http://localhost:3000",
   },
 });
 
 // JSON 요청 본문 파싱을 위한 미들웨어
 app.use(express.json());
-app.use(cors()); // CORS 설정
 
-// 채팅 서버
-app.use("/chatHistory", chatRouter);
+checkConnection(); // DB 연동 확인용
+app.use("/chat", chatRouter); // 채팅 라우터
+chatSocket(io); // Socket 설정
 
-// Socket 설정
-chatSocket(io);
+// 서버 연결 확인용
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
 
 // 서버 연결
 const PORT = process.env.PORT || 5009;
