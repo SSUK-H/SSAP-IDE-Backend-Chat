@@ -2,9 +2,9 @@ const express = require("express"); // 웹서버 프레임워크
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const chatRouter = require("./routes/chat");
-const chatSocket = require("./sockets/chatSocket");
-const { checkConnection } = require("./models/chatModel");
+const chatRouter = require("./src/routes/chat");
+const chatSocket = require("./src/sockets/chatSocket");
+const { checkConnection } = require("./src/models/chatModel");
 
 // 서버 및 소켓 초기화
 const app = express();
