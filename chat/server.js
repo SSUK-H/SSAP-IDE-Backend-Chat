@@ -6,16 +6,25 @@ const chatRouter = require("./src/routes/chat");
 const chatSocket = require("./src/sockets/chatSocket");
 const { checkConnection } = require("./src/models/chatModel");
 
+const CLIENT_ORIGIN = "http://localhost:3000";
+
 // 서버 및 소켓 초기화
 const app = express();
-app.use(cors()); // CORS 설정
-
+app.use(  // CORS 설정
+  cors({
+    origin: CLIENT_ORIGIN,
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);// CORS 설정
 
 const server = http.createServer(app);
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: CLIENT_ORIGIN,
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
