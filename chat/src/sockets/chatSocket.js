@@ -1,8 +1,18 @@
-const { pool } = require("../models/chatModel");
+const { messageEvents } = require("../routes/chat");
 const { saveMessageToDB } = require("../services/messageService");
 
 // 소켓 연결 설정
 const chatSocket = (io) => {
+  // chatRouter에서 발생한 새 메시지 이벤트를 감지
+  messageEvents.on("newMessage", (message) => {
+    io.to(message.roomId).emit("receiveMessage", {
+      email: message.email,
+      name: message.name,
+      message: message.content,
+      socketId: message.socketId,
+    });
+  });
+
   io.on("connection", (socket) => {
     console.log("새로운 클라이언트가 연결되었습니다");
 
@@ -35,6 +45,7 @@ const chatSocket = (io) => {
     // 컨테이너 고유의 room에 조인
     socket.on("joinRoom", async (roomId, email) => {
       socket.join(roomId);
+      socket.roomId = roomId;
       console.log(`${roomId}룸에 ${email}님이 입장하셨습니다`);
     });
 
@@ -52,9 +63,14 @@ const chatSocket = (io) => {
         const result = await saveMessageToDB(roomId, socketId, email, name, message);
 
         if (result.success) {
-          // 다른 클라이언트에게 메세지 전송
-          io.to(roomId).emit("receiveMessage", { email, name, message, socketId });
-          console.log("메세지가 저장되고 다른 클라이언트에게 전송되었습니다");
+          // 저장된 메시지를 감지하여 브로드캐스팅
+          messageEvents.emit("newMessage", {
+            roomId: roomId,
+            email: email,
+            name: name,
+            message: message,
+            socketId: socketId,
+          });
         }
       } catch (error) {
         console.log("메세지 저장 중 오류 발생: ", error);
@@ -63,7 +79,7 @@ const chatSocket = (io) => {
 
     // 연결 종료 시 처리
     socket.on("disconnect", () => {
-      console.log(`소켓 ID가 ${socket.id}인 사용자가 연결을 해제하였습니다`);
+      console.log(`소켓 ID가 ${socket.email}인 사용자가 연결을 해제하였습니다`);
     });
   });
 };
