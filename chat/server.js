@@ -2,21 +2,31 @@ const express = require("express"); // 웹서버 프레임워크
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const chatRouter = require("./src/routes/chat");
-const chatSocket = require("./src/sockets/chatSocket");
-const { checkConnection } = require("./src/models/chatModel");
+const expressSession = require("express-session");
+const crypto = require("crypto"); // 랜덤 문자열 생성
+const chatRouter = require("./chat/routes/chat");
+const chatSocket = require("./chat/sockets/chatSocket");
+const { checkConnection } = require("./chat/models/chatModel");
 
 const CLIENT_ORIGIN = "http://localhost:3000";
+const secretKey = crypto.randomBytes(32).toString("hex");
+const session = expressSession({
+  secret: secretKey, // 세션 데이터 암호화 키
+  resave: false,  // 세션 데이터 변경 시 다시 저장 여부
+  saveUninitialized: true,  // 초기화되지 않은 데이터 저장 여부
+});
 
 // 서버 및 소켓 초기화
 const app = express();
-app.use(  // CORS 설정
+app.use(session);
+app.use(
+  // CORS 설정
   cors({
     origin: CLIENT_ORIGIN,
     methods: ["GET", "POST"],
     credentials: true,
   })
-);// CORS 설정
+);
 
 const server = http.createServer(app);
 
@@ -40,8 +50,21 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  const { email, name } = req.headers; // 헤더에서 필요한 정보를 읽어오기
+  req.session.email = email;  // req.session에 세션 정보를 저장
+  req.session.name = name;
+
+  // 세션 데이터를 저장하려면 반드시 다음 미들웨어로 이동해야 함
+  next();
+
+  res.status(500).send("Something broke!");
+});
+
 // 서버 연결
-const PORT = process.env.PORT || 5009;
+const PORT = process.env.PORT || 5012;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

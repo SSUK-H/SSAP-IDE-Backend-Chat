@@ -1,5 +1,5 @@
 const { pool } = require("../models/chatModel");
-const { saveMessageToDB } = require("../services/messageService.js");
+const { saveMessageToDB } = require("../services/messageService");
 
 // 소켓 연결 설정
 const chatSocket = (io) => {
@@ -15,6 +15,21 @@ const chatSocket = (io) => {
       socket.name = name;
       socket.email = email;
       console.log(`유저 정보 설정:  이메일 - ${email}, 이름 - ${name}`);
+
+      // 세션에 사용자 정보 저장
+      socket.handshake.session.email = email;
+      socket.handshake.session.name = name;
+      // 첫 접속 시간 설정
+      if (!socket.handshake.session.joinTime) {
+        socket.handshake.session.joinTime = new Date().toISOString();
+      }
+      socket.handshake.session.save((err) => {
+        if (err) {
+          console.error("세션 저장 중 오류:", err);
+        } else {
+          console.log("세션 정보가 저장되었습니다");
+        }
+      });
     });
 
     // 컨테이너 고유의 room에 조인
@@ -23,7 +38,7 @@ const chatSocket = (io) => {
       console.log(`${roomId}룸에 ${email}님이 입장하셨습니다`);
     });
 
-    // 메세지 수신 및 해당 room에 보내기
+    // 메세지 전송
     socket.on("sendMessage", async (roomId, msg) => {
       const socketId = socket.id;
       const email = msg.email;
